@@ -1,6 +1,10 @@
 import { useState, useEffect } from 'react'
 import './App.css'
 
+const Expansions = {
+    Harbor: 'HARBOR',
+    MillionaireRow: 'MILLIONAIRE_ROW',
+}
 const base = [
     { place: 'wheat field', dice: 1, type: 'primary' },
     { place: 'ranch', dice: 2, type: 'primary' },
@@ -48,36 +52,51 @@ const millionaireRow = [
 ]
 
 function App() {
-    const [expansion, setExpansion] = useState('N/A')
+    const [expansions, setExpansions] = useState(new Set())
     const [allCards, setAllCards] = useState(base)
 
     useEffect(() => {
-        if (expansion === 'HARBOR') {
-            setAllCards([...base, ...harbor])
-        } else if (expansion === 'MILLIONAIRE ROW') {
-            setAllCards([...base, ...millionaireRow])
-        } else {
-            setAllCards(base)
+        let cards = base
+        if (expansions.has(Expansions.Harbor)) {
+            cards = [...cards, ...harbor]
+        } 
+        if (expansions.has(Expansions.MillionaireRow)) {
+            cards = [...cards, ...millionaireRow]
         }
-    }, [expansion])
+        setAllCards(cards)
+    }, [expansions, expansions.size])
 
-    function handleChangeExpansion() {
-        if (expansion === 'N/A') {
-            setExpansion('HARBOR')
-        } else if (expansion === 'HARBOR') {
-            setExpansion('MILLIONAIRE ROW')
-        } else {
-            setExpansion('N/A')
+    function handleChangeExpansion(name) {
+        return function (event) {
+            if (event.target.checked) {
+                expansions.add(name)
+            } else {
+                expansions.delete(name)
+            }
+            setExpansions(new Set(expansions))
         }
     }
 
     return (
         <div className="App">
             <h1>MACHI RANDO</h1>
-            <h2>EXPANSION: {expansion}</h2>
-            <button onClick={handleChangeExpansion}>
-                Change Expansion Pack
-            </button>
+            <h2>EXPANSIONS:</h2>
+            <label>
+                <input
+                    type="checkbox"
+                    onChange={handleChangeExpansion(Expansions.Harbor)}
+                    checked={expansions.has(Expansions.Harbor)}
+                />
+                Harbor
+            </label>
+            <label>
+            <input
+                    type="checkbox"
+                    onChange={handleChangeExpansion(Expansions.MillionaireRow)}
+                    checked={expansions.has(Expansions.MillionaireRow)}
+                />
+                Millionaire Row
+            </label>
             <FlippedCards allCards={allCards} />
         </div>
     )
@@ -85,40 +104,39 @@ function App() {
 
 export default App
 
-
-function useFlipCards(allCards ) {
-  const [inPlay, setInPlay] = useState(new Set())
+function useFlipCards(allCards) {
+    const [inPlay, setInPlay] = useState(new Set())
     const [newest, setNewest] = useState()
-  function flipCard () {
-    const rand = Math.floor(Math.random() * allCards.length)
-    const card = allCards[rand]
-    if (!inPlay.has(card)) return card
-    return flipCard()
-  }
-  function reset() {
-    const startingCards = new Set()
-    while (startingCards.size < 10) {
-        startingCards.add(flipCard())
+    function flipCard() {
+        const rand = Math.floor(Math.random() * allCards.length)
+        const card = allCards[rand]
+        if (!inPlay.has(card)) return card
+        return flipCard()
     }
-    setInPlay(startingCards)
-  }
+    function reset() {
+        const startingCards = new Set()
+        while (startingCards.size < 10) {
+            startingCards.add(flipCard())
+        }
+        setInPlay(startingCards)
+    }
 
-  function onNewCard() {
-    const newest = flipCard()
-    inPlay.add(newest)
-    setInPlay(new Set(inPlay))
-    setNewest(newest)
-  }
-  return {reset, onNewCard, inPlay, newest}
+    function onNewCard() {
+        const newest = flipCard()
+        inPlay.add(newest)
+        setInPlay(new Set(inPlay))
+        setNewest(newest)
+    }
+    return { reset, onNewCard, inPlay, newest }
 }
 function FlippedCards(props) {
     const { allCards } = props
-    
-    const {reset, onNewCard, inPlay, newest} = useFlipCards(allCards)
-    useEffect(()=>reset(), [allCards])
+
+    const { reset, onNewCard, inPlay, newest } = useFlipCards(allCards)
+    useEffect(() => reset(), [allCards])
     return (
-        <>
-            {' '}<button onClick={onNewCard}>+ Add New Card</button>
+        <div>
+            <button onClick={onNewCard}>+ Add New Card</button>
             <h3>Flipped Cards</h3>
             {Array.from(inPlay)
                 .sort((a, b) => a.dice - b.dice)
@@ -132,6 +150,6 @@ function FlippedCards(props) {
                         <p>{card.place}</p> <p>{card.dice}</p>
                     </div>
                 ))}
-        </>
+        </div>
     )
 }
