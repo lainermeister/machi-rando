@@ -1,7 +1,7 @@
 .App {
   padding: 20px;
   max-width: 400px;
-  
+  text-align: center;
 }
 
 .App-logo {
@@ -29,15 +29,33 @@
 .App-link {
   color: #61dafb;
 }
+.buttons {
+  display: flex;
+  justify-content: space-between;
+}
 
 .App-row {
   display: flex;
   flex-direction: row;
   justify-content: space-between;
-  height:35px;
+  align-items: center;
+  padding: 0px 20px;
+  height: 30px;
+}
+.App-row.primary {
+  color: blue
+}
+.App-row.secondary {
+  color: green
+}
+.App-row.restaurant {
+  color: red;
+}
+.App-row.establishment {
+  color: purple
 }
 .App-row.newest {
-  color: red
+  background-color: lightgray
 }
 
 @keyframes App-logo-spin {
